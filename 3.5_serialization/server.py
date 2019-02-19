@@ -9,7 +9,9 @@ import builtins
 import io
 
 class RestrictedUnpickler(pickle.Unpickler):
-
+    """"This class will restrict the unpickler from using any unpickling method except for
+    codec.myDecode. Raises an Unpickling Error upon discovery of the attempt to use a
+    different unpickling method."""
     def find_class(self, module, name):
         # Only allow safe classes from builtins.
         print(module)
@@ -20,7 +22,9 @@ class RestrictedUnpickler(pickle.Unpickler):
                                      (module, name))
 
 def restricted_loads(s):
-    """Helper function analogous to pickle.loads()."""
+    """Helper function analogous to pickle.loads().
+    This method creates a RestrictedUnpickler to load data
+    from the more secure"""
     return RestrictedUnpickler(io.BytesIO(s)).load()
 
 # function to get data from client, deserialize it, and print it
@@ -29,8 +33,15 @@ def server(soc):
     payload = soc.recv(1024)
     # deserialize the data to an object (expecting string encoded by our codec.py)
     # message = pickle.loads(payload)
+    try:
+        #Attempt to open the payload and catch any unpickling error
+        # that may occur in the process
+        message = restricted_loads(payload)
+        print "Server Received: %s" % message
+    # print the string we received
+    except pickle.UnpicklingError as e:
+        print "Unpickling error! {0}".format(e)
     
-    message = restricted_loads(payload)
 
     # print the string we received
     print "Server Received: %s" % message
